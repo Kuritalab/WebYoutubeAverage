@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+
+<body>
+    <pre id="data"></pre>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" language="javascript">
+        function onButtonClick() {
+            var n = 0;
+            var newvideo = new Date();
+            $.ajax({
+                type: 'get',
+                url: 'https://www.googleapis.com/youtube/v3/search',
+                dataType: 'json',
+                data: {
+                    part: 'id,snippet',
+                    channelId: document.forms.id_InputURL.id_textBox1.value,
+                    maxResults: 50,
+                    order: 'date',
+                    type: 'video',
+                    key: 'AIzaSyBH7oRh7vXRJS0QeGWn7RWhdaNYi8IyCP4'
+                }
+            }).done(function (response) {
+                // 成功
+                var jsonData = JSON.stringify(response, null, "\t");
+                var timeloc = 0;
+                var loopcount = -1;
+                var newvideodatetext = 0;
+                var newvideodate = 0;
+                var oldvideodate = 0;
+                var sumtime = 0;
+                var average = 0;
+                //$('#data').text(jsonData);
+                while (timeloc != -1) {
+                    loopcount = loopcount + 1;
+                    timeloc = jsonData.indexOf('publishTime', timeloc + 1);
+                    if (timeloc != -1) {
+                        if (oldvideodate != 0) {
+                            newvideodate = oldvideodate;
+                        }
+                        newvideodatetext = jsonData.substr(timeloc + 15, 20);
+                        oldvideodate = Date.parse(newvideodatetext);
+                        oldvideodate = oldvideodate / 86400000;
+                        if (newvideodate != 0) {
+                            sumtime = sumtime + newvideodate - oldvideodate;
+                        }
+                    }
+                }
+                average = sumtime / loopcount;
+                average = Math.round(average);
+                document.getElementById('ave').textContent = average;
+            }).fail(function () {
+                // 失敗
+                $('#data').text('失敗しました');
+            });
+        }
+    </script>
+
+    <p>このサイトでは、YouTubeチャンネルの投稿頻度を計算することができます!</p>
+    <p>解析したいYouTubeチャンネルのIDを入力してください!</p>
+    <p>IDは、解析したいYouTubeチャンネルのURLから分かります。</p>
+    <p>https://www.youtube.com/channel/XXXXXXXXXXXXのXXXXXXXXXXXXの部分だけを入力してください!</p>
+
+
+    <form method="POST" name="InputURL" id="id_InputURL" action="">
+        <input name="textBox1" id="id_textBox1" type="text" value="" />
+        <input type="button" value="GO!" onclick="onButtonClick();">
+    </form>
+    <hr />
+    <div>解析結果</div>
+    <p>このチャンネルの平均投稿日数:<span id="ave"></span>日に1本</p>
+</body>
+</html>
